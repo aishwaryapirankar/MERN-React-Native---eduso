@@ -23,9 +23,23 @@ function EditProfile({navigation}) {
 
   const [errors, setErrors] = useState({});
 
+
+  const getData = async () => {
+    try {
+      const value = await AsyncStorage.getItem('SavedToken')
+      if(value !== null) {
+        // value previously stored
+      }
+    } catch(e) {
+      // error reading value
+    }
+  }
+
   
 
   useEffect(() => {
+
+    getData()
     const fetchData = async () => {
       const res = await Axios.get(`${BASE_URL}/users/me/profile`, 
       {

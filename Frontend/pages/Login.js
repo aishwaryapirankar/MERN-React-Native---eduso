@@ -20,6 +20,18 @@ const BASE_URL = 'http://10.0.2.2:3012';
 
 function Login({ navigation }) {
 
+  const storeData = async (value) => {
+    try {
+      await AsyncStorage.setItem('SavedToken', value)
+    } catch (e) {
+      // saving error
+    }
+  }
+
+  useEffect(() => {
+    storeData()
+  })
+
   const initialState = {
     email: "",
     password: "",

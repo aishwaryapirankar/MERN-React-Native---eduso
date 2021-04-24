@@ -29,7 +29,7 @@ function Feed() {
             </View>
             <View style={styles.modal}>
               <Text style={styles.boldtext}>User Name</Text>
-              <Text style={styles.text}>Me in 2020: life is chill, writing songs based in fiction to avoid drama, feeling pretty grown up My 2008 music from the vault, in a goblin voice: “REELEEEEEEASE MR PERFECTLY FIIIIIIINE” Me in 2020: life is chill, writing songs based in fiction to avoid drama, feeling pretty grown up My 2008 music from the vault, in a goblin voice: “REELEEEEEEASE MR PERFECTLY FIIIIIIINE”</Text>
+              <Text style={styles.text}>Hello World</Text>
               <View style={styles.buttons}>
                 <Icon.Button
                   name='check-circle'
@@ -59,7 +59,7 @@ function Feed() {
             </View>
             <View style={styles.modal}>
               <Text style={styles.boldtext}>User Name</Text>
-              <Text style={styles.text}>“REELEEEEEEASE MR PERFECTLY FIIIIIIINE” </Text>
+              <Text style={styles.text}>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum. </Text>
               <View style={styles.buttons}>
                 <Icon.Button
                   name='check-circle'
