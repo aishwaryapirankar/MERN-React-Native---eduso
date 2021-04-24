@@ -20,18 +20,6 @@ const BASE_URL = 'http://10.0.2.2:3012';
 
 function Login({ navigation }) {
 
-  const storeData = async (value) => {
-    try {
-      await AsyncStorage.setItem('SavedToken', value)
-    } catch (e) {
-      // saving error
-    }
-  }
-
-  useEffect(() => {
-    storeData()
-  })
-
   const initialState = {
     email: "",
     password: "",
@@ -58,6 +46,14 @@ function Login({ navigation }) {
     }
     return true;
   };
+
+  const storeToken = async (token) => {
+    try {
+       await AsyncStorage.setItem("SavedToken", JSON.stringify(token));
+    } catch (error) {
+      console.log("Something went wrong", error);
+    }
+  }
   
   const handleLogin = async () => {
     const dataToSend = {
@@ -73,6 +69,10 @@ function Login({ navigation }) {
         let userName = res.data.user.name;
         
         await AsyncStorage.setItem("SavedToken", token);
+        
+        // await AsyncStorage.setItem("User-Name", userName);
+        
+        
 
         console.log(token);
         navigation.navigate('BottomBar');

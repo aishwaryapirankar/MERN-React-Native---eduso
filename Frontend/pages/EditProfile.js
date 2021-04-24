@@ -23,27 +23,12 @@ function EditProfile({navigation}) {
 
   const [errors, setErrors] = useState({});
 
-
-  const getData = async () => {
-    try {
-      const value = await AsyncStorage.getItem('SavedToken')
-      if(value !== null) {
-        // value previously stored
-      }
-    } catch(e) {
-      // error reading value
-    }
-  }
-
   
 
   useEffect(() => {
-
-    getData()
     const fetchData = async () => {
       const res = await Axios.get(`${BASE_URL}/users/me/profile`, 
-      {
-        headers: { Authorization: await AsyncStorage.getItem("SavedToken") },
+      {headers: { Authorization: await AsyncStorage.getItem("SavedToken") },
       });
       setName(res.data.name);
       setAge(res.data.age);
@@ -113,6 +98,7 @@ function EditProfile({navigation}) {
           {
             headers: { Authorization: mytoken }
           },
+          
         );
         navigation.navigate('BottomBar');
         console.log(res);
