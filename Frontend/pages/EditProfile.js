@@ -1,16 +1,9 @@
 import React, {useEffect, useState} from 'react'
 import {View, Text, StyleSheet, TextInput, TouchableOpacity, Image, Button, Alert} from 'react-native'
 import LinearGradient from 'react-native-linear-gradient';
-import * as ImagePicker from "react-native-image-picker"
-
-import * as yup from 'yup';
 import { Formik } from 'formik';
-
-import {useDispatch} from 'react-redux';
-
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import AsyncStorage from '@react-native-community/async-storage';
 import Axios from 'axios'
-
 
 const BASE_URL = 'http://10.0.2.2:3012';
 
@@ -20,15 +13,12 @@ function EditProfile({navigation}) {
   const [age, setAge] = useState();
   const [qualification, setQualification] = useState("");
   const [interests, setInterests] = useState("");
-
   const [errors, setErrors] = useState({});
-
-  
 
   useEffect(() => {
     const fetchData = async () => {
-      const res = await Axios.get(`${BASE_URL}/users/me/profile`, 
-      {headers: { Authorization: await AsyncStorage.getItem("SavedToken") },
+      const res = await Axios.get(`${BASE_URL}/users/me/profile`, {
+        headers: { 'Authorization': await AsyncStorage.getItem("SavedToken") },
       });
       setName(res.data.name);
       setAge(res.data.age);
@@ -37,7 +27,6 @@ function EditProfile({navigation}) {
 
     };
     fetchData();
-
   }, []);
 
   const validate = () => {
@@ -77,30 +66,27 @@ function EditProfile({navigation}) {
     return true;
   };
 
-
-
-
   const handleCreateProfile = async () => {
-    const form = new FormData();
-        form.append("name", name);
-        form.append("age", age);
-        form.append("qualification", qualification);
-        form.append("interests", interests);
-
     const isValid = validate();
     if (isValid) {
       setErrors({});
       try {
-        var mytoken = await AsyncStorage.getItem('SavedToken')
+        const form = {
+          name: name,
+          age: age,
+          qualification: qualification,
+          interests: interests
+        }
+
         const res = await Axios.post(
           `${BASE_URL}/users/me/createProfile`,
           form,
           {
-            headers: { Authorization: mytoken }
-          },
-          
+            headers: { 'Authorization': await AsyncStorage.getItem("SavedToken")},
+          }
         );
-        navigation.navigate('BottomBar');
+        navigation.navigate('BottomBar')
+        alert('Please login again to see the changes!')
         console.log(res);
       } catch (error) {
         alert(error);
@@ -112,15 +98,12 @@ function EditProfile({navigation}) {
     handleCreateProfile();
   };
 
-
-
     return (
       <LinearGradient colors={['#EDC31D', '#000000']} style={styles.linearGradient}>
       <View style={styles.container}>
         <Text style={styles.text}>Edit Profile</Text>    
 
-        <Formik
-          >
+        <Formik>
           {(props) => 
           <>
           <TextInput 
@@ -173,24 +156,11 @@ function EditProfile({navigation}) {
               <Text style={{ fontSize: 10, color: 'red' }}>{errors.interests}</Text>
           </View>
 
-          {/* <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-          {photo && (
-            <Image
-              source={{ uri: photo.uri }}
-              style={{ width: 300, height: 300 }}
-            />
-          )}
-          <Button title="Choose Photo" onPress={handleChoosePhoto} />
-        </View> */}
-
-
         <TouchableOpacity style={styles.register} onPress={handleSubmit}><Text style={styles.register_text}>Update</Text></TouchableOpacity>
-                
       </>
       }
       </Formik>
       </View>
-              
       </LinearGradient>
 
     )

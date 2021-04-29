@@ -8,8 +8,7 @@ const main = async() => {
     useCreateIndex: true,
     useFindAndModify: false,
   });
-
-  //await con.disconnect();
 }
 
 main();
+

@@ -8,22 +8,6 @@ const Profile = require('../models/Profile');
 const bcrypt = require('bcryptjs');
 const router = express.Router();
 
-
-
-const multer = require("multer");
-const upload = multer({ dest: "../../images/" });
-
-router.use("/images", express.static("../../images"));
-
-const loginValidation = [
-  check('email')
-      .isEmail()
-      .withMessage('Please provide a valid email'),
-  check('password')
-      .isLength({min: 6})
-      .withMessage('Password must be at least six characters')
-]
-
 // =========================================User Authentication Routes=======================================
 
 router.post("/users/register", async (req, res) => {
@@ -83,7 +67,6 @@ router.get("/users/me/profile", auth, async (req, res) => {
 router.post(
   "/users/me/createProfile",
   auth,
-  //upload.single("image"),
   async (req, res) => {
     //create User Profile
 
@@ -95,13 +78,6 @@ router.post(
           },
         },
       });
-      // let imagePath;
-      // if (req.file) {
-      //   imagePath = req.file.path;
-      //   await user.updateOne({
-      //     image: imagePath,
-      //   });
-      // }
 
       await user.updateOne({
         ...req.body,
@@ -121,12 +97,11 @@ router.post(
   }
 );
 
-//----------------------------------------------------User Create Expresso routes---------------------------------
+//----------------------------------------------------User Create Post routes---------------------------------
 
 router.post(
   "/users/me/createPost",
   auth,
-  //upload.single("image"),
   async (req, res) => {
 
     try {
@@ -162,43 +137,29 @@ router.post(
   }
 );
 
-router.post("/users/me/deletePost", auth, async (req, res) => {
-  try {
-    const user = req.user;
-    const postId = req.body.post_id;
-    await Post.findOneAndDelete({ _id: postId });
-    await User.updateMany(
-      {
-        userFavPosts: { $exists: true },
-      },
-      {
-        $pull: {
-          userFavPosts: {
-            post: postId,
-          },
-        },
-      }
-    );
+// ===========================================User Feed routes==================================================
 
-    const u = await User.findOneAndUpdate(
-      {
-        _id: user._id,
-      },
-      {
-        $pull: {
-          userPosts: {
-            post: postId,
-          },
-        },
-      }
-    );
-    res.status(201).send({ u });
+router.get("/users/me/feed", auth, async (req, res) => {
+  try {
+    const userFeed = await Post.find();
+    res.status(201).send(userFeed);
   } catch (error) {
-    res.status(500).send(error);
+    res.send(400).send(error);
   }
 });
 
-// =====================================================Book-Mark Expresso==================================================
+router.get("/users/me/feed/search/", auth, async (req, res) => {
+  try {
+    let regex = new RegExp(req.query.subject, "i");
+    const searchedPost = await Post.find({ subject: regex });
+    res.status(201).send(searchedPost);
+  } catch (error) {
+    res.send(400).send(error);
+  }
+});
+
+
+// =====================================================Save Post==================================================
 
 router.post("/users/me/addToFavorite", auth, async (req, res) => {
   try {
@@ -212,7 +173,7 @@ router.post("/users/me/addToFavorite", auth, async (req, res) => {
       },
     });
     if (isPostFavorite) {
-      throw new Error({ error: "Post already Favorited" });
+      throw new Error({ error: "Post already Saved" });
     } else {
       await User.findOneAndUpdate(
         {
@@ -242,7 +203,134 @@ router.post("/users/me/addToFavorite", auth, async (req, res) => {
   }
 });
 
-router.get("/users/me/favoritePost", auth, async (req, res) => {
+router.post("/users/me/addToFavorite", auth, async (req, res) => {
+  try {
+    const user = req.user;
+    const postId = req.body.post_id;
+    console.log(postId);
+
+    const isPostFavorite = await User.findOne({
+      userFavPosts: {
+        post: postId,
+      },
+    });
+    if (isPostFavorite) {
+      throw new Error({ error: "Post already Saved" });
+    } else {
+      await User.findOneAndUpdate(
+        {
+          _id: user._id,
+        },
+        {
+          $push: {
+            userFavPosts: {
+              post: postId,
+            },
+          },
+        }
+      );
+    }
+    const u = await User.findOne({
+      tokens: {
+        $elemMatch: {
+          token: req.token,
+        },
+      },
+    }).populate("userFavPosts.post");
+    res.status(201).send({ u });
+  } catch (error) {
+    res.status(400).send("Post present" + error);
+
+    alert(error);
+  }
+});
+
+router.post("/users/me/report", auth, async (req, res) => {
+  try {
+    const user = req.user;
+    const postId = req.body.post_id;
+    console.log(postId);
+
+    const isPostReported = await User.findOne({
+      userPostReported: {
+        post: postId,
+      },
+    });
+    if (isPostReported) {
+      throw new Error({ error: "Post already reported" });
+    } else {
+      await User.findOneAndUpdate(
+        {
+          _id: user._id,
+        },
+        {
+          $push: {
+            userPostReported: {
+              post: postId,
+            },
+          },
+        }
+      );
+    }
+    const u = await User.findOne({
+      tokens: {
+        $elemMatch: {
+          token: req.token,
+        },
+      },
+    }).populate("userPostReported.post");
+    res.status(201).send({ u });
+  } catch (error) {
+    res.status(400).send("Post reported" + error);
+
+    alert(error);
+  }
+});
+
+
+router.post("/users/me/helpful", auth, async (req, res) => {
+  try {
+    const user = req.user;
+    const postId = req.body.post_id;
+    console.log(postId);
+
+    const isPostHelpful = await User.findOne({
+      userPostHelpful: {
+        post: postId,
+      },
+    });
+    if (isPostHelpful) {
+      throw new Error({ error: "Post already marked as helpful" });
+    } else {
+      await User.findOneAndUpdate(
+        {
+          _id: user._id,
+        },
+        {
+          $push: {
+            userPostHelpful: {
+              post: postId,
+            },
+          },
+        }
+      );
+    }
+    const u = await User.findOne({
+      tokens: {
+        $elemMatch: {
+          token: req.token,
+        },
+      },
+    }).populate("userPostHelpful.post");
+    res.status(201).send({ u });
+  } catch (error) {
+    res.status(400).send("Post marked as helpful" + error);
+
+    alert(error);
+  }
+});
+
+router.get("/users/me/SavedPost", auth, async (req, res) => {
   try {
     const u = await User.findOne({
       tokens: {

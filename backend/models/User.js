@@ -1,4 +1,3 @@
-
 const mongoose = require("mongoose");
 const validator = require("validator");
 const bcrypt = require("bcrypt");
@@ -56,6 +55,22 @@ const userSchema = mongoose.Schema({
     },
   ],
   userFavPosts: [
+    {
+      post: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Post",
+      },
+    },
+  ],
+  userPostHelpful: [
+    {
+      post: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Post",
+      },
+    },
+  ],
+  userPostReported: [
     {
       post: {
         type: mongoose.Schema.Types.ObjectId,

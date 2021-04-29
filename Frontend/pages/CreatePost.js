@@ -1,37 +1,90 @@
-import React from 'react'
+import React, {useState, useEffect} from 'react'
 import { Image, StyleSheet, Text, View, TextInput, TouchableOpacity, Alert } from "react-native";
 import {Picker} from '@react-native-picker/picker';
-import * as yup from 'yup';
-import { Formik } from 'formik';
+import Axios from 'axios';
+import AsyncStorage from '@react-native-community/async-storage';
 
-import { NavigationContainer } from '@react-navigation/native';
-import { color } from 'react-native-reanimated';
+const BASE_URL = 'http://10.0.2.2:3012';
 
 const logo = require('../images/yellow-logo.png');
 const name_icon = require('../images/name-icon.png');
 const email_icon = require('../images/email-icon.png');
 const password_icon = require('../images/password-icon.png')
 
-
 function CreatePost({navigation}) {
 
-  const register = () => {
-    Alert.alert('Status','Posted!')
-    navigation.navigate('Feed')
-  }  
+  const [content, setContent] = useState("");
+  const [subject, setSubject] = useState("General");
+  const [errors, setErrors] = useState({});
+
+  const validate = () => {
+    let contentError = "";
+    let subjectError = "";
+
+    if (content === "") {
+      contentError = "Enter some text for your post";
+    }
+    if (subject === "") {
+      subjectError = "Specify the subject from the list ";
+    }
+
+    if (contentError || subjectError) {
+      setErrors({
+        ...errors,
+        content: contentError,
+        subject: subjectError,
+      });
+      return false;
+    }
+    return true;
+  };
+
+  const handleCreatePost = async () => {
+    const isValid = validate();
+    if (isValid) {
+      setErrors({});
+      try {
+        const post = {
+          content: content,
+          subject: subject,
+        }
+
+        const res = await Axios.post(
+          `${BASE_URL}/users/me/createPost`,
+          post,
+          {
+            headers: { 'Authorization': await AsyncStorage.getItem("SavedToken")},
+          }
+        );
+        navigation.navigate('Feed')
+        console.log(res);
+      } catch (error) {
+        alert(error);
+      }
+    }
+  };
+
+  const handleSubmit = () => {
+    handleCreatePost();
+  };
 
     return (
       <View style={styles.container}>
         <Image source={logo} style={styles.image} />
         <TextInput 
+          onChangeText={content => setContent(content)}
+          value={content}
           style={styles.input}
           multiline
           placeholder="What do you want to share?" 
           placeholderTextColor="white">
         </TextInput>
+        <View>
+          <Text style={{ fontSize: 10, color: 'red' }}>{errors.content}</Text>
+        </View>
         
         <View style={styles.picker}>
-        <Picker style={styles.picker}>
+        <Picker style={styles.picker} selectedValue={subject} onValueChange={(subject) => setSubject(subject)}>
           <Picker.Item label="Choose Subject - General" value="General" />
           <Picker.Item label="Linguistic" value="Linguistic" />
           <Picker.Item label="Mathematics" value="Mathematics" />
@@ -48,8 +101,10 @@ function CreatePost({navigation}) {
           <Picker.Item label="Commerce" value="Commerce" />
         </Picker>
         </View>
-        
-        <TouchableOpacity style={styles.register} onPress={register}><Text style={styles.register_text}>CREATE</Text></TouchableOpacity>
+        <View>
+          <Text style={{ fontSize: 10, color: 'red' }}>{errors.subject}</Text>
+        </View>
+        <TouchableOpacity style={styles.register} onPress={handleSubmit}><Text style={styles.register_text}>CREATE</Text></TouchableOpacity>
       </View>
     )
 }

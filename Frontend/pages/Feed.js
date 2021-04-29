@@ -1,16 +1,114 @@
-import React from 'react'
-import { ImageBackground,ScrollView, StyleSheet, Text, View, Button, TouchableOpacity, Alert} from "react-native";
+import React, {useState, useRef, useEffect} from 'react'
+import { ImageBackground,ScrollView, StyleSheet, Text, View, Button, TouchableOpacity, Alert, Dimensions, StatusBar, Platform} from "react-native";
 import { NavigationContainer } from '@react-navigation/native';
 import {Picker} from '@react-native-picker/picker';
 import Icon from 'react-native-vector-icons/FontAwesome'; 
+import AsyncStorage from '@react-native-community/async-storage';
+
+import Axios from 'axios';
+const BASE_URL = 'http://10.0.2.2:3012';
 
 function Feed() {
+
+  const [data, setData] = useState([]);
+  const [filteredData, setFilteredData] = useState([]);
+  const [isFilterOn, setIsFilterOn] = useState(false);
+  const [subject, setSubject] = useState("General");
+  const [postID, setPostID] = useState("");
+
+  const buttonRefs = useRef([]);
+  buttonRefs.current = [];
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const res = await Axios.get(`${BASE_URL}/users/me/feed`, {
+        headers: { 'Authorization': await AsyncStorage.getItem("SavedToken") },
+      });
+      setData(res.data);
+      console.log(res.data);
+    };
+    fetchData();
+  }, []);
+
+  const onFilterData = async () => {
+    const res = await Axios.get(`${BASE_URL}/users/me/feed/search`, {
+      headers: { 'Authorization': await AsyncStorage.getItem("SavedToken") },
+      params: { 'subject': subject },
+    });
+    setFilteredData(res.data);
+  };
+
+  const saved = async (postID) => {
+    const dataToSend = {
+      post_id: postID,
+    };
+
+      try {
+        const res = await Axios.post(
+          `${BASE_URL}/users/me/addToFavorite`,
+          dataToSend,
+          {
+            headers: { 'Authorization': await AsyncStorage.getItem("SavedToken") },
+          }
+        );
+        console.log(res);
+        alert('Saved!')
+      } catch (error) {
+        alert(error);
+      }
+  };
+
+  const helpful = async (postID) => {
+    const dataToSend = {
+      post_id: postID,
+    };
+
+      try {
+        const res = await Axios.post(
+          `${BASE_URL}/users/me/helpful`,
+          dataToSend,
+          {
+            headers: { 'Authorization': await AsyncStorage.getItem("SavedToken") },
+          }
+        );
+        console.log(res);
+        alert('Helpful!')
+      } catch (error) {
+        alert(error);
+      }
+  };
+
+  const report = async (postID) => {
+    const dataToSend = {
+      post_id: postID,
+    };
+
+      try {
+        const res = await Axios.post(
+          `${BASE_URL}/users/me/report`,
+          dataToSend,
+          {
+            headers: { 'Authorization': await AsyncStorage.getItem("SavedToken") },
+          }
+        );
+        console.log(res);
+        alert('Reported!')
+      } catch (error) {
+        alert(error);
+      }
+  };
+
+  const handleFilterToggle = () => {
+    setIsFilterOn(true);
+    onFilterData();
+  };
+
     return (
         <ScrollView style={{backgroundColor: 'black'}}>
         <View style={styles.container}>
-            {/* <Text style={styles.text}>This is Feed</Text> */}
+          <View style={styles.filterarea}>
             <View style={styles.picker}>
-              <Picker style={styles.picker}>
+              <Picker style={styles.picker} selectedValue={subject} onValueChange={(subject) => setSubject(subject)}>
                 <Picker.Item label="Choose Subject - General" value="General" />
                 <Picker.Item label="Linguistic" value="Linguistic" />
                 <Picker.Item label="Mathematics" value="Mathematics" />
@@ -27,70 +125,95 @@ function Feed() {
                 <Picker.Item label="Commerce" value="Commerce" />
               </Picker>
             </View>
-            <View style={styles.modal}>
-              <Text style={styles.boldtext}>User Name</Text>
-              <Text style={styles.text}>Hello World</Text>
-              <View style={styles.buttons}>
-                <Icon.Button
-                  name='check-circle'
-                  backgroundColor='black'
+            <View style={styles.filter}>
+            <Icon.Button
+                  name='filter'
+                  backgroundColor='#EDC31D'
                   style={styles.icons}
-                  color='#EDC31D'
-                  onPress={() => alert('Helpful!')}>
-                  Helpful
-                </Icon.Button>
-                <Icon.Button
-                  name='save'
-                  backgroundColor='black'
-                  style={styles.icons}
-                  color='#EDC31D'
-                  onPress={() => alert('Saved!')}>
-                  Save
-                </Icon.Button>
-                <Icon.Button
-                  name='bullhorn'
-                  backgroundColor='black'
-                  style={styles.icons}
-                  color='#EDC31D'
-                  onPress={() => alert('Reported!')}>
-                  Report
-                </Icon.Button>
-              </View>
+                  color='black'
+                  onPress={handleFilterToggle}>
+                  Filter
+            </Icon.Button>
             </View>
-            <View style={styles.modal}>
-              <Text style={styles.boldtext}>User Name</Text>
-              <Text style={styles.text}>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum. </Text>
-              <View style={styles.buttons}>
-                <Icon.Button
-                  name='check-circle'
-                  backgroundColor='black'
-                  style={styles.icons}
-                  color='#EDC31D'
-                  onPress={() => alert('Helpful!')}>
-                  Helpful
-                </Icon.Button>
-                <Icon.Button
-                  name='save'
-                  backgroundColor='black'
-                  style={styles.icons}
-                  color='#EDC31D'
-                  onPress={() => alert('Saved!')}>
-                  Save
-                </Icon.Button>
-                <Icon.Button
-                  name='bullhorn'
-                  backgroundColor='black'
-                  style={styles.icons}
-                  color='#EDC31D'
-                  onPress={() => alert('Reported!')}>
-                  Report
-                </Icon.Button>
-              </View>
-            </View>
-            {/* <View style={styles.modal}></View>
-            <View style={styles.modal}></View>
-            <View style={styles.modal}></View> */}
           </View>
+
+          {isFilterOn ? (
+            <View  >
+              {filteredData.map((item, index) => {
+              return (
+              <View key={item._id} style={styles.modal}>
+              <Text style={styles.boldtext}>Subject: {item.subject}</Text>
+              <Text style={styles.text}>{item.content}</Text>
+              <View style={styles.buttons}>
+                <Icon.Button
+                  name='check-circle'
+                  backgroundColor='black'
+                  style={styles.icons}
+                  color='#EDC31D'
+                  onPress={() => helpful(item._id)}>
+                  Helpful
+                </Icon.Button>
+                <Icon.Button
+                  name='save'
+                  backgroundColor='black'
+                  style={styles.icons}
+                  color='#EDC31D'
+                  onPress={() => saved(item._id)}>
+                  Save
+                </Icon.Button>
+                <Icon.Button
+                  name='bullhorn'
+                  backgroundColor='black'
+                  style={styles.icons}
+                  color='#EDC31D'
+                  onPress={() => report(item._id)}>
+                  Report
+                </Icon.Button>
+              </View>
+              </View>);
+              })}
+            </View>
+        ):(
+          <View  >
+            <>
+            {data.map((item, index) => {
+              return (
+                <View key={item._id} style={styles.modal} >
+              <Text style={styles.boldtext}>Subject: {item.subject}</Text>
+              <Text style={styles.text}>{item.content}</Text>
+              <View style={styles.buttons}>
+                <Icon.Button
+                  name='check-circle'
+                  backgroundColor='black'
+                  style={styles.icons}
+                  color='#EDC31D'
+                  onPress={() => helpful(item._id)}>
+                  Helpful
+                </Icon.Button>
+                <Icon.Button
+                  name='save'
+                  backgroundColor='black'
+                  style={styles.icons}
+                  color='#EDC31D'
+                  onPress={() => saved(item._id)}>
+                  Save
+                </Icon.Button>
+                <Icon.Button
+                  name='bullhorn'
+                  backgroundColor='black'
+                  style={styles.icons}
+                  color='#EDC31D'
+                  onPress={() => report(item._id)}>
+                  Report
+                </Icon.Button>
+              </View>
+                </View>
+              )})}
+            </>
+          </View>
+
+        )}
+        </View>
         </ScrollView>
     )
 }
@@ -98,13 +221,24 @@ function Feed() {
 
 const styles = StyleSheet.create({
     container: {
-      paddingTop: 20,
+      paddingTop: 40,
       flex: 1,
       flexDirection: "column",
       fontFamily: 'Montserrat',
       backgroundColor: 'black',
       justifyContent: 'center',
       alignItems: 'center',
+    },
+    filter: {
+      paddingTop: 10,
+      height: 60,
+      borderRadius: 10,
+    },
+    filterarea: {
+      width: 360,
+      flexDirection: 'row',
+      alignItems: 'stretch',
+      justifyContent: 'space-evenly'
     },
     scroll: {
       backgroundColor: 'transparent'
@@ -122,6 +256,8 @@ const styles = StyleSheet.create({
       fontSize: 16
     },
     modal: {
+      marginBottom: 20,
+      padding: 10,
       fontFamily: 'Montserrat',
       //height: 250,
       width: 370,
@@ -142,7 +278,7 @@ const styles = StyleSheet.create({
       }
     },
     picker: {
-      width: 360,
+      width: 250,
       height: 60,
       backgroundColor: '#222222',
       color: '#EDC31D',

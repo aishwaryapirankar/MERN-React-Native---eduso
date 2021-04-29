@@ -6,9 +6,6 @@ import * as yup from 'yup';
 import { Formik } from 'formik';
 import Axios from 'axios';
 
-
-
-
 const logo = require('../images/yellow-logo.png');
 const name_icon = require('../images/name-icon.png');
 const email_icon = require('../images/email-icon.png');
@@ -73,6 +70,7 @@ function Register({navigation}) {
           `${BASE_URL}/users/register`,
           dataToSend
         );
+        
         console.log(res);
         await navigation.navigate('Login');
       } catch ({ err }) {

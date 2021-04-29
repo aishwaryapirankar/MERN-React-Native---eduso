@@ -1,33 +1,41 @@
-import React, {useEffect, props} from 'react'
+import React, {useEffect, useState} from 'react'
 import { ScrollView, Image, Dimensions, StyleSheet, Text, View, Button, TouchableOpacity } from "react-native";
-import { NavigationContainer } from '@react-navigation/native';
+import AsyncStorage from '@react-native-community/async-storage';
+import Axios from 'axios'
 const jwtDecode = require('jwt-decode');
 
+const BASE_URL = 'http://10.0.2.2:3012';
 
 function Profile({navigation}) {
 
-    // const loadProfile = async () => {
-    //   const token = await AsyncStorage.getItem('token');
-    //   if(!token) {
-    //       navigation.navigate('Login');
-    //   }
+  const [data, setData] = useState({});
+  const [flag, setFlag] = useState(false);
+  const [totalPosts, settotalPosts] = useState(0);
+  const [posts, setPosts] = useState([]);
 
-    //   const decoded = jwtDecode(token);
-    //   setFullName(decoded.fullName);
-    //   setEmail(decoded.email);
-    // }
+  const fetchData = async () => {
+    const res = await Axios.get(`${BASE_URL}/users/me/profile`, {
+      headers: { 'Authorization': await AsyncStorage.getItem("SavedToken") },
+    });
+    setData(res.data);
+    setPosts(res.data.userPosts);
+    settotalPosts(res.data.userPosts.length);
 
-    // const logout = () => {
-    //     AsyncStorage.removeItem('token')
-    //         .then(() => {
-    //             navigation.replace('Home')
-    //         })
-    //         .catch(err => console.log(err));
-    // }
+    console.log(res)
 
-    // useEffect(() => {
-    //     loadProfile();
-    // });  
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, [flag]);
+
+  const logout = () => {
+    AsyncStorage.removeItem('SavedToken')
+      .then(() => {
+        navigation.replace('Home')
+      })
+      .catch(err => console.log(err));
+  }  
 
     return (
       <ScrollView>
@@ -41,20 +49,18 @@ function Profile({navigation}) {
                 source={{
                   uri:'https://picsum.photos/200/300.jpg'
                 }}/>
-            <Text style={styles.username}>Aishwarya Pirankar</Text>
-            <Text style={styles.qualification}>Developer</Text>
+            <Text style={styles.username}>Welcome {data.name}!</Text>
+            <Text style={styles.qualification}>Age: {data.age}</Text>
+            <Text style={styles.qualification}>Qualification: {data.qualification}</Text>
+            <Text style={styles.qualification}>Interests: {data.interests}</Text>
             <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('EditProfile')}><Text style={styles.text}>EDIT</Text></TouchableOpacity>
-
             <Button
                 title="Logout"
-                color="#222222">
+                color="#222222"
+                onPress={logout}
+                >
             </Button>
-            
-            
-            
-
           </View>
-          
         </View>
       </ScrollView>
     )
@@ -106,7 +112,16 @@ const styles = StyleSheet.create({
         width: 1
       }
     },
+    bgg: {
+      //height: Dimensions.get('window').height,
+      width: Dimensions.get('window').width,
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      zIndex: 2,
+    },
     postmodal: {
+      marginTop: 20,
       paddingBottom: 20,
       fontFamily: 'Montserrat',
       //height: 600,

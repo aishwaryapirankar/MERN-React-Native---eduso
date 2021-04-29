@@ -1,6 +1,6 @@
 import React, {useEffect} from "react";
 import 'react-native-gesture-handler';
-import { ImageBackground, StyleSheet, Text, View, Button, TouchableOpacity } from "react-native";
+import { ImageBackground, StyleSheet, Text, View, Button, TouchableOpacity, Platform, StatusBar } from "react-native";
 import {Provider} from 'react-redux';
 
 import SplashScreen from 'react-native-splash-screen'
@@ -26,7 +26,6 @@ const App = () => {
   },[]);
 
   return(
-    //<Provider store={store}>
       <NavigationContainer>
         <Stack.Navigator initialRouteName="Home" screenOptions={{headerShown: false}}>
           <Stack.Screen name="Home" component={Firstpage} />
@@ -38,6 +37,8 @@ const App = () => {
           <Stack.Screen name="EditProfile" component={EditProfile} />
         </Stack.Navigator>
       </NavigationContainer>
+    //<Provider store={store}>
+      
     //</Provider>
   );
 };
